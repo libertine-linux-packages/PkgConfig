@@ -9,14 +9,17 @@ case "$package" in
 	
 	build_PkgConfig)
 		
-		build_provides pkg-config
+		build_provides pkg-config-original
 		
 		depends build_perl
 		build_needs perl
 		
+		depends build_busybox
+		build_needs env sh
+		
 		libertine_compile_build_PkgConfig()
 		{
-			_libertine_compile_PkgConfig_internal "$(libertine_public_outputBuildSysrootPath)"
+			_libertine_compile_PkgConfig_internal true
 		}
 		
 	;;
@@ -24,10 +27,10 @@ case "$package" in
 	PkgConfig)
 	
 		depends perl
-	
+		
 		libertine_compile_PkgConfig()
 		{
-			_libertine_compile_PkgConfig_internal "$(libertine_public_outputInitramfsPath)"
+			_libertine_compile_PkgConfig_internal false
 		}
 		
 	;;
@@ -36,15 +39,30 @@ esac
 
 
 depends build_busybox
-build_needs mkdir sed chmod
+build_needs mkdir sed chmod cat
 _libertine_compile_PkgConfig_internal()
 {
-	local outputSysrootFolderPath="$1"
+	local isForBuild="$1"
+
+	local outputSysrootFolderPath
+	local perlEnvironment
+	local scriptName
+	if $isForBuild; then
+		outputSysrootFolderPath="$(libertine_public_outputBuildSysrootPath)"
+		perlEnvironment="$(libertine_public_buildNeedsPath)"/perl
+		scriptName=pkg-config-original
+	else
+		outputSysrootFolderPath="$(libertine_public_outputInitramfsPath)"
+		perlEnvironment='/usr/bin/env perl'
+		scriptName=pkg-config
+	fi
 	
 	local binFolderPath="$outputSysrootFolderPath"/usr/bin
 	mkdir -m 0755 -p "$binFolderPath"
 	
-	cp "$(libertine_public_sourcePath)"/lib/PkgConfig.pm "$binFolderPath"/pkg-config
-	chmod +x "$binFolderPath"/pkg-config
-	libertine_public_adjustShaBang "$binFolderPath"/pkg-config
+	sed -e \
+		'1 s;^.*$;#!'"$perlEnvironment"';' \
+		"$(libertine_public_sourcePath)"/lib/PkgConfig.pm \
+		>"$binFolderPath"/"$scriptName"
+	chmod +x "$binFolderPath"/"$scriptName"
 }
