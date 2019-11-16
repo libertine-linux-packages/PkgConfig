@@ -2,4 +2,3 @@
 	path = upstream
 	url = https://github.com/libertine-linux-clones/perl-PkgConfig.git
 	libertine-linux-upstream = https://github.com/PerlPkgConfig/perl-PkgConfig.git
-
