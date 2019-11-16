@@ -1,4 +1,5 @@
 [submodule "upstream"]
 	path = upstream
 	url = https://github.com/libertine-linux-clones/perl-PkgConfig.git
+	branch = master
 	libertine-linux-upstream = https://github.com/PerlPkgConfig/perl-PkgConfig.git
